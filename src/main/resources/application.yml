@@ -1,0 +1,24 @@
+spring:
+    h2:
+        console:
+            enabled: true
+            path: /h2-console
+    datasource:
+        url: jdbc:h2:mem:testdb
+        username: sa
+        password:
+        driver-class-name: org.h2.Driver
+#spring:
+#    datasource:
+#        url: jdbc:postgresql://localhost:5432/mydb
+#        username: myuser
+#        password: mypassword
+#        driver-class-name: org.postgresql.Driver
+#    jpa:
+#        database-platform: org.hibernate.dialect.PostgreSQLDialect
+#        hibernate:
+#            ddl-auto: create
+
+jwt:
+    expiration:
+      ms: 86400000  # 24 hours in milliseconds
