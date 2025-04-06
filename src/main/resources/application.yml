@@ -8,6 +8,15 @@ spring:
         username: sa
         password:
         driver-class-name: org.h2.Driver
+
+springdoc:
+  api-docs:
+     enabled:
+          true
+  swagger-ui:
+      enabled:
+          true
+
 #spring:
 #    datasource:
 #        url: jdbc:postgresql://localhost:5432/mydb

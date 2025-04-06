@@ -1,10 +1,13 @@
 package com.deepjava.jwtlogin.controller;
 
+import com.deepjava.jwtlogin.dto.JwtResponse;
 import com.deepjava.jwtlogin.dto.LoginRequest;
 import com.deepjava.jwtlogin.dto.SignupRequest;
 import com.deepjava.jwtlogin.entity.User;
 import com.deepjava.jwtlogin.repository.UserRepository;
 import com.deepjava.jwtlogin.security.JwtService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,13 +15,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin("*")
 public class AuthController {
     private final UserRepository userRepository;
 
@@ -45,10 +46,18 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtService.generateToken(new User(loginRequest.getUsername(),loginRequest.getPassword()));
-        return ResponseEntity.ok(jwt);
+        return ResponseEntity.ok(new JwtResponse(jwt, loginRequest.getUsername()));
     }
 
     @PostMapping("/signup")
+    @Operation(
+            summary = "Get user by ID",
+            description = "Returns a user with the specified ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User found"),
+                    @ApiResponse(responseCode = "404", description = "User not found")
+            }
+    )
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body("Error: Username is already taken!");
@@ -57,8 +66,8 @@ public class AuthController {
         User user = new User(signUpRequest.getUsername(), passwordEncoder.encode(signUpRequest.getPassword()));
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
+        String jwt = jwtService.generateToken(user);
 
-        return ResponseEntity.ok("User registered successfully! Token: " + token);
+        return ResponseEntity.ok(new JwtResponse(jwt, user.getUsername()));
     }
 }
