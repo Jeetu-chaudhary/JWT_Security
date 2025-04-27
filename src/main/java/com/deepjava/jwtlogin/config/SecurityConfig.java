@@ -2,6 +2,7 @@ package com.deepjava.jwtlogin.config;
 
 
 import com.deepjava.jwtlogin.security.impl.JwtAuthFilter;
+import com.deepjava.jwtlogin.security.impl.OAuth2SuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,12 +33,39 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler ;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          UserDetailsService userDetailsService) {
+                          UserDetailsService userDetailsService,OAuth2SuccessHandler  oAuth2SuccessHandler ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
+        this.oAuth2SuccessHandler=oAuth2SuccessHandler;
     }
+
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(withDefaults())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/api/auth/signup",
+//                                "/api/auth/signin",
+//                                "/api/auth/generateToken",
+//                                "/swagger-ui.html",
+//                                "/swagger-ui/**",
+//                                "/v3/api-docs/**",
+//                        "/h2-console/**"
+//                                ).permitAll()
+//                        .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
+//                        .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(authenticationProvider())
+//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,19 +73,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/signup",
+                        .requestMatchers(
+                                "/api/auth/signup",
                                 "/api/auth/signin",
                                 "/api/auth/generateToken",
+                                "/oauth2/**", // Allow OAuth2 endpoints
+                                "/login/oauth2/**", // OAuth2 login redirects
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                        "/h2-console/**"
-                                ).permitAll()
-//                        .requestMatchers("/auth/user/**").hasAuthority("ROLE_USER")
-//                        .requestMatchers("/auth/admin/**").hasAuthority("ROLE_ADMIN")
+                                "/h2-console/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oAuth2SuccessHandler) // Handle OAuth2 success
+                )
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

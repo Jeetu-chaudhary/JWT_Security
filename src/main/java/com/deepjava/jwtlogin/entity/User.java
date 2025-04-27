@@ -31,6 +31,32 @@ public class User implements UserDetails {
     }
 
     @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username; // ✅ This is the method causing your error
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Customize if needed
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Customize if needed
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Customize if needed
+    }
+
+
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
